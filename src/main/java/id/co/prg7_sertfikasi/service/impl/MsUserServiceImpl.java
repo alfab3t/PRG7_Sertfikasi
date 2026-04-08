@@ -62,14 +62,25 @@ public class MsUserServiceImpl implements MsUserService {
     @Override
     public DtoResponse updateUser(MsUser user) {
         try {
+            MsUser existing = msUserRepository.findById(user.getUsr_id()).orElse(null);
+            if (existing == null) {
+                return new DtoResponse(404, null, MsUserConstant.mNotFound);
+            }
+            // hanya update field yang tidak null
+            if (user.getUsr_nama() != null) existing.setUsr_nama(user.getUsr_nama());
+            if (user.getUsr_email() != null) existing.setUsr_email(user.getUsr_email());
+            if (user.getUsr_username() != null) existing.setUsr_username(user.getUsr_username());
             if (user.getUsr_password() != null && !user.getUsr_password().isEmpty()) {
-                user.setUsr_password(encryptPassword(user.getUsr_password()));
+                existing.setUsr_password(encryptPassword(user.getUsr_password()));
             }
-            MsUser updated = msUserRepository.save(user);
-            if (updated != null) {
-                return new DtoResponse(200, updated, MsUserConstant.mUpdateSuccess);
-            }
-            return new DtoResponse(404, null, MsUserConstant.mNotFound);
+            if (user.getUsr_role() != null) existing.setUsr_role(user.getUsr_role());
+            if (user.getUsr_status() != null) existing.setUsr_status(user.getUsr_status());
+            if (user.getPro_id() != null) existing.setPro_id(user.getPro_id());
+            if (user.getUsr_modiby() != null) existing.setUsr_modiby(user.getUsr_modiby());
+            if (user.getUsr_modidate() != null) existing.setUsr_modidate(user.getUsr_modidate());
+
+            MsUser updated = msUserRepository.save(existing);
+            return new DtoResponse(200, updated, MsUserConstant.mUpdateSuccess);
         } catch (Exception e) {
             return new DtoResponse(500, null, MsUserConstant.mUpdateFailed);
         }
